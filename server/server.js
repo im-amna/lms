@@ -15,7 +15,7 @@ app.use(cors());
 //Routes
 
 app.get("/", (req, res) => res.send("API Working"));
-app.use(express.json());
+app.post("/clerk", express.json(), clerkWebhooks);
 app.post("/clerk", async (req, res) => {
   console.log("Webhook received:", req.body);
 
