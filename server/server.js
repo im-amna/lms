@@ -15,7 +15,13 @@ app.use(cors());
 //Routes
 
 app.get("/", (req, res) => res.send("API Working"));
-app.post("/clerk", express.json(), clerkWebhooks);
+app.use(express.json());
+app.post("/clerk", async (req, res) => {
+  console.log("Webhook received:", req.body);
+
+  // Your webhook logic here
+  res.status(200).send("Webhook received");
+});
 
 //Port
 const PORT = process.env.PORT || 5000;
