@@ -16,6 +16,7 @@ import AddCourse from "./pages/educator/AddCourse";
 import MyCourses from "./pages/educator/MyCourses";
 import CourseAnalytics from "./pages/educator/CourseAnalytics";
 import StudentsEnrolled from "./pages/educator/StudentsEnrolled";
+//import { ToastContainer } from "react-toastify";
 
 // Shared components
 import Navbar from "./components/student/Navbar";

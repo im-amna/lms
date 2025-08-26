@@ -14,7 +14,7 @@ export const updateRoleToEducator = async (req, res) => {
     });
     res.json({ success: true, message: "You can publish a course now" });
   } catch (error) {
-    resizeBy.json({ success: false, message: error.message });
+    res.json({ success: false, message: error.message });
   }
 };
 
@@ -48,6 +48,7 @@ export const addCourse = async (req, res) => {
 
 export const getEducatorCourses = async (req, res) => {
   try {
+    console.log("here");
     const educator = req.auth.userId;
     const courses = await Course.find({ educator });
     res.json({ success: true, courses });
