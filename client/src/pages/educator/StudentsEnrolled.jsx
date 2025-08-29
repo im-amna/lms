@@ -1,12 +1,33 @@
-import React, { useEffect, useState } from "react";
-import { dummyStudentEnrolled } from "../../assets/assets";
+import React, { useContext, useEffect, useState } from "react";
+import axios from "axios";
 
 const StudentsEnrolled = () => {
-  const [enrolledStudents, setEnrolledStudents] = useState([]);
+  const [backendUrl, getToken, isEducator] = useContext(AppContext);
+  const [enrolledStudents, setEnrolledStudents] = useState(null);
+  const fetchEnrolledStudents = async () => {
+    try {
+      const token = await getToken();
+      const { data } = await axios.get(
+        backendUrl + `/api/educator/enrolled-students`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (data.success) {
+        setEnrolledStudents(data.enrolledStudents.reverse());
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
 
   useEffect(() => {
-    setEnrolledStudents(dummyStudentEnrolled);
-  }, []);
+    if (isEducator) {
+      fetchEnrolledStudentsEnrolledStudents();
+    }
+  }, [isEducator]);
 
   return (
     <div className="min-h-screen flex flex-col items-start justify-between md:p-8 md:pb-0 p-4 pt-8 pb-0">

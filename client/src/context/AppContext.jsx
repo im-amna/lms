@@ -1,6 +1,6 @@
 import { createContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import humanizeDuration from "humanize-Duration";
+import humanizeDuration from "humanize-duration";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -14,7 +14,7 @@ export const AppContextProvider = (props) => {
   const [allCourses, setAllCourses] = useState([]);
   const [isEducator, setIsEducator] = useState(false);
   const [userData, setUserData] = useState(null);
-  const [enrolledCourses, setUserEnrolledCourses] = useState([]);
+  const [enrolledCourses, setEnrolledCourses] = useState([]);
 
   //Fetch All Courses
   const fetchAllCourses = async () => {
@@ -36,8 +36,8 @@ export const AppContextProvider = (props) => {
     }
     try {
       const token = await getToken();
-      await axios.get(backendUrl + "/api/user/data", {
-        headers: { Authorization: Bearer`${token}` },
+      const { data } = await axios.get(backendUrl + "/api/user/data", {
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (data.success) {
         setUserData(data.user);
@@ -61,16 +61,14 @@ export const AppContextProvider = (props) => {
     return Math.floor(totalRating / course.courseRatings.length);
   };
 
-  {
-    /Func to calculate course chapter time/;
-  }
+  //Func to calculate course chapter time;
 
   const calculateChapterTime = (chapter) => {
     let time = 0;
     chapter.chapterContent.map((lecture) => (time += lecture.lectureDuration));
     return humanizeDuration(time * 60 * 1000, { units: ["h", "m"] });
   };
-  /Func to calculate course Duration/;
+  //Func to calculate course Duration;
 
   const calculateCourseDuration = (course) => {
     let time = 0;
@@ -97,11 +95,11 @@ export const AppContextProvider = (props) => {
       const { data } = await axios.get(
         backendUrl + "/api/user/enrolled-courses",
         {
-          headers: { Authorization: Bearer` ${token}` },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
       if (data.success) {
-        setUserEnrolledCourses(data.userEnrolledCourses.reverse());
+        setEnrolledCourses(data.enrolledCourses.reverse());
       } else {
         toast.error(data.message);
       }

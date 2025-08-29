@@ -22,7 +22,7 @@ const Navbar = () => {
       console.log(token);
       const { data } = await axios.get(
         backendUrl + "/api/educator/update-role",
-        { Headers: { Authorization: Bearer` ${token}` } }
+        { Headers: { Authorization: ` Bearer ${token}` } }
       );
       if (data.success) {
         setIsEducator(true);
@@ -68,7 +68,7 @@ const Navbar = () => {
           </button>
         )}
       </div>
-      {/for phone screen/}
+      {/* {for phone screen} */}
       <div className="md:hidden flex items-center gap-2 sm:gap-5  text-gray-500 ">
         <div className="flex items-center gap-1  sm:gap-2 max-sm:text-xs">
           {user && (

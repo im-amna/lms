@@ -3,9 +3,10 @@ import { useParams } from "react-router-dom";
 import { AppContext } from "../../context/AppContext";
 import Loading from "../../components/student/Loading";
 import { assets } from "../../assets/assets";
-import humanizeDuration from "humanize-Duration";
+import humanizeDuration from "humanize-duration";
 import Youtube from "react-youtube";
 import { toast } from "react-toastify";
+import axios from "axios";
 
 const CourseDetails = () => {
   const { id } = useParams();
@@ -52,7 +53,7 @@ const CourseDetails = () => {
         backendUrl,
         "/api/user/purchase",
         { courseId: courseData._id },
-        { headers: { Authorization: Bearer`${token} ` } }
+        { headers: { Authorization: `Bearer ${token} ` } }
       );
       if (data.success) {
         const { session_url } = data;
@@ -99,7 +100,7 @@ const CourseDetails = () => {
             __html: courseData.courseDescription.slice(0, 200),
           }}
         ></p>
-        {/Ratings nd Reviews/}
+        {/*Ratings nd Reviews*/}
         <div className="flex items-center space-x-2 pt-3 pb-1 text-sm">
           <p>{calculateRating(courseData)}</p>
           <div className="flex">
