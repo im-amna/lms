@@ -1,6 +1,8 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { AppContext } from "../../context/AppContext";
+import axios from "axios";
+import { toast } from "react-toastify";
 import {
   LineChart,
   Line,
@@ -14,23 +16,38 @@ import {
 } from "recharts";
 
 const CourseAnalytics = () => {
-  const { courseId } = useParams();
-  const { allCourses, currency } = useContext(AppContext);
+  // ✅ Fix: courseId → id (matches route /educator/course/:id)
+  const { id } = useParams();
+  const { currency, backendUrl } = useContext(AppContext);
   const [course, setCourse] = useState(null);
 
+  const fetchCourse = async () => {
+    try {
+      const { data } = await axios.get(backendUrl + "/api/course/" + id);
+      if (data.success) {
+        setCourse(data.courseData);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
   useEffect(() => {
-    const foundCourse = allCourses.find((c) => c.id === courseId);
-    setCourse(foundCourse);
-  }, [allCourses, courseId]);
+    if (id) fetchCourse();
+  }, [id]);
 
   if (!course) {
     return <p className="p-8 text-gray-500">Loading course analytics...</p>;
   }
 
-  // Dummy data for charts
   const earningsData = course.enrolledStudents.map((student, i) => ({
-    name: Student`${i + 1}`,
-    earning: course.coursePrice - (course.discount * course.coursePrice) / 100,
+    name: `Student ${i + 1}`,
+    earning: +(
+      course.coursePrice -
+      (course.discount * course.coursePrice) / 100
+    ).toFixed(2),
   }));
 
   return (
@@ -73,36 +90,42 @@ const CourseAnalytics = () => {
         </div>
       </div>
 
-      {/* Charts Section */}
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Earnings Chart */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <h3 className="text-lg font-semibold mb-4">Earnings by Student</h3>
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={earningsData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="earning" fill="#3b82f6" />
-            </BarChart>
-          </ResponsiveContainer>
+      {/* No students yet */}
+      {earningsData.length === 0 ? (
+        <div className="bg-white shadow rounded-lg p-6 text-center text-gray-400">
+          No students enrolled yet — charts will appear here once students enroll.
         </div>
+      ) : (
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Earnings Chart */}
+          <div className="bg-white shadow rounded-lg p-6">
+            <h3 className="text-lg font-semibold mb-4">Earnings by Student</h3>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={earningsData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="earning" fill="#3b82f6" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
 
-        {/* Enrollment Trend */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <h3 className="text-lg font-semibold mb-4">Enrollment Trend</h3>
-          <ResponsiveContainer width="100%" height={250}>
-            <LineChart data={earningsData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="earning" stroke="#10b981" />
-            </LineChart>
-          </ResponsiveContainer>
+          {/* Enrollment Trend */}
+          <div className="bg-white shadow rounded-lg p-6">
+            <h3 className="text-lg font-semibold mb-4">Enrollment Trend</h3>
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart data={earningsData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Line type="monotone" dataKey="earning" stroke="#10b981" />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

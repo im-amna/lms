@@ -1,11 +1,18 @@
 import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
+import { toast } from "react-toastify";
+import { useUser } from "@clerk/clerk-react";
+import { AppContext } from "../../context/AppContext";
 
 const StudentsEnrolled = () => {
-  const [backendUrl, getToken, isEducator] = useContext(AppContext);
+  const { backendUrl, getToken } = useContext(AppContext);
+  const { user } = useUser(); // ✅ Direct Clerk se user lo
   const [enrolledStudents, setEnrolledStudents] = useState(null);
+  const [loading, setLoading] = useState(true);
+
   const fetchEnrolledStudents = async () => {
     try {
+      setLoading(true);
       const token = await getToken();
       const { data } = await axios.get(
         backendUrl + `/api/educator/enrolled-students`,
@@ -20,14 +27,17 @@ const StudentsEnrolled = () => {
       }
     } catch (error) {
       toast.error(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (isEducator) {
-      fetchEnrolledStudentsEnrolledStudents();
+    // ✅ isEducator ke bajaye direct Clerk role check
+    if (user?.publicMetadata?.role === "educator") {
+      fetchEnrolledStudents();
     }
-  }, [isEducator]);
+  }, [user]); // ✅ user pe watch karo
 
   return (
     <div className="min-h-screen flex flex-col items-start justify-between md:p-8 md:pb-0 p-4 pt-8 pb-0">
@@ -46,25 +56,45 @@ const StudentsEnrolled = () => {
             </tr>
           </thead>
           <tbody className="text-sm text-gray-500">
-            {enrolledStudents.map((item, index) => (
-              <tr key={index} className="border-b border-gray-500/20">
-                <td className="px-4 py-3 text-center hidden sm:table-cell">
-                  {index + 1}
-                </td>
-                <td className="md:px-4 px-2 py-3 flex items-center space-x-3">
-                  <img
-                    src={item.student.imageUrl}
-                    alt={`${item.student.name}'s profile`}
-                    className="w-9 h-9 rounded-full"
-                  />
-                  <span className="truncate">{item.student.name}</span>
-                </td>
-                <td className="px-4 py-3 truncate">{item.courseTitle}</td>
-                <td className="px-4 py-3 hidden sm:table-cell">
-                  {new Date(item.purchaseDate).toLocaleDateString()}
+            {/* Loading state */}
+            {loading && (
+              <tr>
+                <td colSpan="4" className="px-4 py-8 text-center text-gray-400">
+                  Loading...
                 </td>
               </tr>
-            ))}
+            )}
+
+            {/* Empty state */}
+            {!loading && enrolledStudents?.length === 0 && (
+              <tr>
+                <td colSpan="4" className="px-4 py-8 text-center text-gray-400">
+                  No students enrolled yet.
+                </td>
+              </tr>
+            )}
+
+            {/* Data rows */}
+            {!loading &&
+              enrolledStudents?.map((item, index) => (
+                <tr key={index} className="border-b border-gray-500/20">
+                  <td className="px-4 py-3 text-center hidden sm:table-cell">
+                    {index + 1}
+                  </td>
+                  <td className="md:px-4 px-2 py-3 flex items-center space-x-3">
+                    <img
+                      src={item.student.imageUrl}
+                      alt={`${item.student.name}'s profile`}
+                      className="w-9 h-9 rounded-full"
+                    />
+                    <span className="truncate">{item.student.name}</span>
+                  </td>
+                  <td className="px-4 py-3 truncate">{item.courseTitle}</td>
+                  <td className="px-4 py-3 hidden sm:table-cell">
+                    {new Date(item.purchaseDate).toLocaleDateString()}
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>

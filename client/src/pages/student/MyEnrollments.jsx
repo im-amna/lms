@@ -1,8 +1,10 @@
 import React, { useContext, useEffect, useState } from "react";
+import axios from "axios";
 import { AppContext } from "../../context/AppContext";
 import { Line } from "rc-progress";
 import Footer from "../../components/student/Footer";
 import { toast } from "react-toastify";
+
 const MyEnrollments = () => {
   const {
     enrolledCourses,
@@ -16,10 +18,12 @@ const MyEnrollments = () => {
   } = useContext(AppContext);
 
   const [progressArray, setProgressArray] = useState([]);
+
   const getCourseProgress = async () => {
     try {
       const token = await getToken();
-      const tempProgressArray = await promise.all(
+      // ✅ Fix: Promise.all (capital P)
+      const tempProgressArray = await Promise.all(
         enrolledCourses.map(async (course) => {
           const { data } = await axios.post(
             `${backendUrl}/api/user/get-course-progress`,
@@ -38,11 +42,13 @@ const MyEnrollments = () => {
       toast.error(error.message);
     }
   };
+
   useEffect(() => {
     if (userData) {
       fetchUserEnrolledCourses();
     }
   }, [userData]);
+
   useEffect(() => {
     if (enrolledCourses.length > 0) {
       getCourseProgress();
@@ -51,10 +57,10 @@ const MyEnrollments = () => {
 
   return (
     <>
-      <div className=" md:px-36 px-8 pt-10">
-        <h1 className="text-2xl font-semibold ">My Enrollments Page</h1>
+      <div className="md:px-36 px-8 pt-10">
+        <h1 className="text-2xl font-semibold">My Enrollments</h1>
         <table className="md:table-auto table-fixed w-full overflow-hidden border mt-10">
-          <thead className=" text-gray-900 border-b border-gray-500/20 text-sm text-left max-sm:hidden">
+          <thead className="text-gray-900 border-b border-gray-500/20 text-sm text-left max-sm:hidden">
             <tr>
               <th className="px-4 py-3 font-semibold truncate">Course</th>
               <th className="px-4 py-3 font-semibold truncate">Duration</th>
@@ -64,12 +70,12 @@ const MyEnrollments = () => {
           </thead>
           <tbody className="text-gray-700">
             {enrolledCourses.map((course, index) => (
-              <tr key={index} className="border-b border-gray-500/20 ">
-                <td className="md:px-4  pl-2 md:pl-4  py-3  flex items-center space-x-3">
+              <tr key={index} className="border-b border-gray-500/20">
+                <td className="md:px-4 pl-2 md:pl-4 py-3 flex items-center space-x-3">
                   <img
                     src={course.courseThumbnail}
-                    alt=""
-                    className="w-14 sm:w-24  md:w-28"
+                    alt={course.courseTitle}
+                    className="w-14 sm:w-24 md:w-28"
                   />
                   <div className="flex-1">
                     <p className="mb-1 max-sm:text-sm">{course.courseTitle}</p>
@@ -88,22 +94,22 @@ const MyEnrollments = () => {
                 <td className="px-4 py-3 max-sm:hidden">
                   {calculateCourseDuration(course)}
                 </td>
+                {/* ✅ Fix: space added between lectureCompleted and /totalLectures */}
                 <td className="px-4 py-3 max-sm:hidden">
                   {progressArray[index] &&
-                    `${progressArray[index].lectureCompleted} /${progressArray[index].totalLectures}`}
+                    `${progressArray[index].lectureCompleted} / ${progressArray[index].totalLectures} `}
                   <span>Lectures</span>
                 </td>
                 <td className="px-4 py-3 max-sm:text-right">
                   <button
-                    className="px-3 sm:px-5 py-1.5 sm:py-2 bg-blue-600 max-sm:text-xs text-white "
+                    className="px-3 sm:px-5 py-1.5 sm:py-2 bg-blue-600 max-sm:text-xs text-white rounded"
                     onClick={() => navigate("/player/" + course._id)}
                   >
                     {progressArray[index] &&
                     progressArray[index].lectureCompleted /
-                      progressArray[index].totalLectures ===
-                      1
-                      ? "completed"
-                      : " On Going"}
+                      progressArray[index].totalLectures === 1
+                      ? "Completed"
+                      : "On Going"}
                   </button>
                 </td>
               </tr>
