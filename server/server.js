@@ -15,12 +15,23 @@ const app = express();
 await connectDB();
 await connectCloudinary();
 
-var corsOptions = {
-  origin: process.env.FRONTEND_URL,
-}
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://lms-neon-beta.vercel.app"
+];
 
-// Middlewares
-app.use(cors(corsOptions));
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true); // allow non-browser requests
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("CORS not allowed"));
+    }
+  },
+  credentials: true
+}));
 
 app.use(clerkMiddleware());
 
