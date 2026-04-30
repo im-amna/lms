@@ -15,8 +15,13 @@ const app = express();
 await connectDB();
 await connectCloudinary();
 
+var corsOptions = {
+  origin: process.env.FRONTEND_URL,
+}
+
 // Middlewares
-app.use(cors());
+app.use(cors(corsOptions));
+
 app.use(clerkMiddleware());
 
 // Routes
