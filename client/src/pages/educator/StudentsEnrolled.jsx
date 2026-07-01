@@ -6,20 +6,38 @@ import { AppContext } from "../../context/AppContext";
 
 const StudentsEnrolled = () => {
   const { backendUrl, getToken } = useContext(AppContext);
-  const { user } = useUser(); // ✅ Direct Clerk se user lo
-  const [enrolledStudents, setEnrolledStudents] = useState(null);
+  const { user } = useUser();
+
+  const [enrolledStudents, setEnrolledStudents] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchEnrolledStudents = async () => {
     try {
       setLoading(true);
-      const token = await getToken();
-      const { data } = await axios.get(
-        backendUrl + `/api/educator/enrolled-students`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+
+      const isDemo = window.location.pathname.startsWith("/demo");
+
+      let response;
+
+      if (isDemo) {
+        response = await axios.get(
+          backendUrl + "/api/educator/demo/students"
+        );
+      } else {
+        const token = await getToken();
+
+        response = await axios.get(
+          backendUrl + "/api/educator/enrolled-students",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+      }
+
+      const { data } = response;
+
       if (data.success) {
         setEnrolledStudents(data.enrolledStudents.reverse());
       } else {
@@ -33,68 +51,65 @@ const StudentsEnrolled = () => {
   };
 
   useEffect(() => {
-    // ✅ isEducator ke bajaye direct Clerk role check
-    if (user?.publicMetadata?.role === "educator") {
+    const isDemo = window.location.pathname.startsWith("/demo");
+
+    if (isDemo || user?.publicMetadata?.role === "educator") {
       fetchEnrolledStudents();
     }
-  }, [user]); // ✅ user pe watch karo
+  }, [user]);
 
   return (
-    <div className="min-h-screen flex flex-col items-start justify-between md:p-8 md:pb-0 p-4 pt-8 pb-0">
-      <div className="flex flex-col items-center max-w-4xl w-full overflow-hidden rounded-md bg-white border border-gray-500/20">
-        <table className="table-fixed md:table-auto w-full overflow-hidden pb-4">
-          <thead className="text-gray-900 border-b border-gray-500/20 text-sm text-left">
+    <div className="min-h-screen flex flex-col items-start md:p-8 p-4 pt-8">
+      <div className="flex flex-col items-center max-w-4xl w-full overflow-hidden rounded-md bg-white border border-gray-300">
+        <table className="table-fixed md:table-auto w-full">
+          <thead className="border-b text-left">
             <tr>
-              <th className="px-4 py-3 font-semibold text-center hidden sm:table-cell">
-                #
-              </th>
-              <th className="px-4 py-3 font-semibold">Student Name</th>
-              <th className="px-4 py-3 font-semibold">Course Title</th>
-              <th className="px-4 py-3 font-semibold hidden sm:table-cell">
-                Date
-              </th>
+              <th className="px-4 py-3 hidden sm:table-cell">#</th>
+              <th className="px-4 py-3">Student Name</th>
+              <th className="px-4 py-3">Course Title</th>
+              <th className="px-4 py-3 hidden sm:table-cell">Date</th>
             </tr>
           </thead>
-          <tbody className="text-sm text-gray-500">
-            {/* Loading state */}
-            {loading && (
+
+          <tbody>
+            {loading ? (
               <tr>
-                <td colSpan="4" className="px-4 py-8 text-center text-gray-400">
+                <td colSpan="4" className="text-center py-8">
                   Loading...
                 </td>
               </tr>
-            )}
-
-            {/* Empty state */}
-            {!loading && enrolledStudents?.length === 0 && (
+            ) : enrolledStudents.length === 0 ? (
               <tr>
-                <td colSpan="4" className="px-4 py-8 text-center text-gray-400">
-                  No students enrolled yet.
+                <td colSpan="4" className="text-center py-8">
+                  No Students Found
                 </td>
               </tr>
-            )}
-
-            {/* Data rows */}
-            {!loading &&
-              enrolledStudents?.map((item, index) => (
-                <tr key={index} className="border-b border-gray-500/20">
-                  <td className="px-4 py-3 text-center hidden sm:table-cell">
+            ) : (
+              enrolledStudents.map((item, index) => (
+                <tr key={index} className="border-b">
+                  <td className="px-4 py-3 hidden sm:table-cell">
                     {index + 1}
                   </td>
-                  <td className="md:px-4 px-2 py-3 flex items-center space-x-3">
+
+                  <td className="px-4 py-3 flex items-center gap-3">
                     <img
                       src={item.student.imageUrl}
-                      alt={`${item.student.name}'s profile`}
+                      alt={item.student.name}
                       className="w-9 h-9 rounded-full"
                     />
-                    <span className="truncate">{item.student.name}</span>
+                    <span>{item.student.name}</span>
                   </td>
-                  <td className="px-4 py-3 truncate">{item.courseTitle}</td>
+
+                  <td className="px-4 py-3">
+                    {item.courseTitle}
+                  </td>
+
                   <td className="px-4 py-3 hidden sm:table-cell">
                     {new Date(item.purchaseDate).toLocaleDateString()}
                   </td>
                 </tr>
-              ))}
+              ))
+            )}
           </tbody>
         </table>
       </div>
