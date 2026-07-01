@@ -5,6 +5,9 @@ import {
   getEducatorCourses,
   getEnrolledStudentsData,
   updateRoleToEducator,
+   demoDashboardData,
+  demoCourses,
+  demoStudents,
 } from "../controllers/educatorController.js";
 import upload from "../configs/multer.js";
 import { protectEducator } from "../middlewares/authMiddleware.js";
@@ -27,5 +30,8 @@ educatorRouter.get(
   protectEducator,
   getEnrolledStudentsData
 );
+educatorRouter.get("/demo/dashboard", demoDashboardData);
+educatorRouter.get("/demo/courses", demoCourses);
+educatorRouter.get("/demo/students", demoStudents);
 
 export default educatorRouter;
