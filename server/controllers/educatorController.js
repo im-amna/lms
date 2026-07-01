@@ -292,3 +292,31 @@ export const demoDashboardData = async (req, res) => {
     });
   }
 };
+// ==============================
+// DEMO COURSE DETAILS
+// ==============================
+
+export const demoCourseById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const courseData = await Course.findById(id);
+
+    if (!courseData) {
+      return res.json({
+        success: false,
+        message: "Course not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      courseData,
+    });
+  } catch (error) {
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
