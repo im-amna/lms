@@ -47,25 +47,48 @@ const Dashboard = () => {
   // Colors for Pie slices
   const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444"];
   const fetchDashboardData = async () => {
-    try {
+  try {
+    const isDemo = window.location.pathname.startsWith("/demo");
+
+    let response;
+
+    if (isDemo) {
+      // Demo mode (No Login Required)
+      response = await axios.get(
+        backendUrl + "/api/educator/demo/dashboard"
+      );
+    } else {
+      // Normal Educator Dashboard
       const token = await getToken();
-      const { data } = await axios.get(backendUrl + `/api/educator/dashboard`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (data.success) {
-        setDashboardData(data.dashboardData);
-      } else {
-        toast.error(data.message);
-      }
-    } catch (error) {
-      toast.error(error.message);
+
+      response = await axios.get(
+        backendUrl + "/api/educator/dashboard",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
     }
-  };
-  useEffect(() => {
-    if (isEducator) {
-      fetchDashboardData();
+
+    const { data } = response;
+
+    if (data.success) {
+      setDashboardData(data.dashboardData);
+    } else {
+      toast.error(data.message);
     }
-  }, [isEducator]);
+  } catch (error) {
+    toast.error(error.message);
+  }
+};
+useEffect(() => {
+  const isDemo = window.location.pathname.startsWith("/demo");
+
+  if (isDemo || isEducator) {
+    fetchDashboardData();
+  }
+}, [isEducator]);
   {
     /*return dashboardData ? (
     <div className="min-h-screen flex flex-col items-start justify-between gap-8 md:p-8 md:pb-0 p-4 pt-8 pb-0">
@@ -257,9 +280,9 @@ export default Dashboard;*/
               >
                 {revenueData.map((entry, index) => (
                   <Cell
-                    key={Cell - { index }}
-                    fill={COLORS[index % COLORS.length]}
-                  />
+  key={index}
+  fill={COLORS[index % COLORS.length]}
+/>
                 ))}
               </Pie>
               <Tooltip />
